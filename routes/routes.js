@@ -28,12 +28,6 @@ const {
     tokenAuthencitacion } = require('../models/users/index')
 
 
-routes.get('/1', (req, res, next) => {
-    //do nothing yet
-    console.dir('hola')
-    res.end()
-})
-
 routes.get('/articles', async (req, res, next) => {
     try {
         const articles = await getArticles(connection)

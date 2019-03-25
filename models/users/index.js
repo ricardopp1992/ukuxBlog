@@ -42,7 +42,6 @@ function getUser(connection, user) {
 function insertArticle(connection, article){
     return new Promise( async (resolve, reject) => {
         const { token, title, date, content, categoryArticle} = article
-        let image
 
         try {
             const isAuthenticated = await tokenAuthencitacion(connection, token)

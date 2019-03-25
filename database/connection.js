@@ -11,15 +11,21 @@ const pool = mysql.createPool({
     database: conf.database
 })
     
-pool.getConnection( async (err, connection) => {
-    connection.query('SELECT 1 + 1 as solution',  (err, rows, fields) => {
-        if(err) {
-            console.log(err)
-        }
+pool.getConnection( (err, connection) => {
+    if(err){
+        console.log(err)
+        
+    } else {
+        connection.query('SELECT 1 + 1 as solution',  (err, rows, fields) => {
+            if(err) {
+                console.error(err)
+            }
+    
+            console.log(`Database connected: ${ rows[0].solution }`)
+    
+        })    
 
-        console.log(`Database connected: ${ rows[0].solution }`)
-
-    })    
+    }
 })
 
 module.exports = pool

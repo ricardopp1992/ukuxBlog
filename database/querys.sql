@@ -14,9 +14,10 @@ CREATE TABLE articulo (
     id int auto_increment,
     titulo varchar(50) not null,
     contenido text not null,
-    fecha date not null,
+    fecha timestamp not null,
     autor varchar(20) not null,
+    imagen blob not null,
+    categoria varchar(15),
     primary key(id)
-    -- imagen
 );
 
