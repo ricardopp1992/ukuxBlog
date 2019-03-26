@@ -3,6 +3,7 @@
 const uuid = require('uuid/v4')
 const fs = require('fs')
 const path = require('path')
+const sharp = require('sharp')
 
 
 function getUser(connection, user) {
@@ -38,7 +39,6 @@ function getUser(connection, user) {
     })
 }
 
-// recordar agregar la imagen luego
 function insertArticle(connection, article){
     return new Promise( async (resolve, reject) => {
         const { token, title, date, content, categoryArticle} = article
@@ -49,22 +49,26 @@ function insertArticle(connection, article){
 
             if (isAuthenticated.resp) {
                 try{
-                    fs.readFile(path.join(__dirname, '../../imageTemp/image.jpg'), function (err, data) {
-                        console.log(data)
-                        
-                        const insertArticle = 'INSERT INTO articulo (titulo, contenido, fecha, autor, imagen, categoria ) VALUES (?, ?, ?, ?, ?, ?)'
+                    await createSmallImage()
 
-                        connection.query(insertArticle, [title, content, date, author, data, categoryArticle], (err, results, fields) => {
-                            if(Boolean(err)){
-                                reject({ resp: false, message: err.message})
+                    fs.readFile(path.join(__dirname, '../../imageTemp/image.jpg'), function (err, data) {                        
+                        const insertArticle = 'INSERT INTO articulo (titulo, contenido, fecha, autor, imagen, imagen_p, categoria ) VALUES (?, ?, ?, ?, ?, ?, ?)'
 
-                            } else if(results.affectedRows){
-                                resolve({ resp: true, message: 'article inserted successful' })
+                        getSmallImageData((dataSmall) => {
+                            console.log(dataSmall)
+                            connection.query(insertArticle, [title, content, date, author, data, dataSmall, categoryArticle], (err, results, fields) => {
+                                if(Boolean(err)){
+                                    reject({ resp: false, message: err.message})
+    
+                                } else if(results.affectedRows){
+                                    resolve({ resp: true, message: 'article inserted successful' })
+    
+                                } else {
+                                    reject({ resp: false, message: 'the article insertion has failed' })
+    
+                                }
+                            })
 
-                            } else {
-                                reject({ resp: false, message: 'the article insertion has failed' })
-
-                            }
                         })
                         
                     })
@@ -79,10 +83,11 @@ function insertArticle(connection, article){
     })
 }
 
-function getArticles(connection, author = false){
+function getArticles(connection, author = false){ 
     return new Promise((resolve, reject) => {
         const authorEsc = (author) ? `%${author}` : '%'
-        const selectArticles = 'SELECT * FROM articulo WHERE autor LIKE ? ORDER BY fecha DESC'
+        const selectArticles = 'SELECT titulo, contenido, autor, imagen_p as imagen, categoria  FROM articulo WHERE autor LIKE ? ORDER BY fecha DESC'
+        // const selectArticles = 'SELECT * FROM articulo WHERE autor LIKE ? ORDER BY fecha DESC'
 
         connection.query(selectArticles, [authorEsc], (err, rows, fields) => {
             if (err) {
@@ -172,11 +177,62 @@ function tokenAuthencitacion(connection, token){
     })
 }
 
+function createSmallImage(){
+    return new Promise((res, rej) => {
+        const imageP = fs.createWriteStream(path.join(__dirname, '../../imageTemp/image_p.jpeg'))
+
+        fs.readFile(path.join(__dirname, '../../imageTemp/image.jpg'), async (err, data) => {
+            if(Boolean(err)) {
+                console.error(err)
+                rej()
+            } else if (data.length > 1000000) {
+                console.log('greater than 1Mb: ', data.length)
+
+                try{
+                    let dataBuff = await sharp(path.join(__dirname, '../../imageTemp/image.jpg'))
+                    .jpeg({
+                        quality: 20
+                    })
+                    .toBuffer()
+    
+                    imageP.write(dataBuff)
+                    dataBuff = null
+                    imageP.destroy()
+                    res()
+
+                } catch(e) {
+                    console.error(e)
+                    rej()
+                }
+                
+                
+            } else {
+                console.log('lower than 1Mb: ', data.length)
+
+                imageP.write(data)
+                imageP.destroy()
+                res()
+            }
+        })
+    })
+}
+
+function getSmallImageData (cb){
+    fs.readFile(path.join(__dirname, '../../imageTemp/image_p.jpeg'), (err, data) => {
+        if(err){
+            console.error(err)
+        }
+
+        cb(data)
+    })
+}
+
 module.exports = {
     getUser,
     insertArticle,
     getArticles,
     deleteArticle,
     tokenAuthencitacion,
-    getArticle
+    getArticle,
+    createSmallImage
 }

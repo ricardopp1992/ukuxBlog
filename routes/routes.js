@@ -25,7 +25,8 @@ const {
     getArticles,
     getArticle, 
     deleteArticle,
-    tokenAuthencitacion } = require('../models/users/index')
+    tokenAuthencitacion,
+    createSmallImage } = require('../models/users/index')
 
 
 routes.get('/articles', async (req, res, next) => {
@@ -140,8 +141,8 @@ routes.post('/insert-article', async (req, res, next) => {
     }
 })
 
-routes.post('/upload-image', (req, res, next) => {
-    upload(req, res, function (err) {
+routes.post('/upload-image', async (req, res, next) => {
+    upload(req, res, async function (err) {
         if (err instanceof multer.MulterError) {
           console.log(err)
           
