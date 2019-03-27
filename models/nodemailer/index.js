@@ -21,7 +21,7 @@ function sendEmail (email, message, subject){
             service: "gmail",
             auth:{
                     type: "OAuth2",
-                    user: "ricardopp1992@gmail.com", 
+                    user: "ukuxhumana@gmail.com", 
                     clientId: clientId,
                     clientSecret: clientSecret,
                     refreshToken: refreshToken,
@@ -33,10 +33,10 @@ function sendEmail (email, message, subject){
         })
         
         const mailOptions = {
-            from: 'ricardopp1992@gmail.com', // sender address
-            to: email, // list of receivers
+            from: 'ukuxhumana@gmail.com', // sender address
+            to: 'ukuxhumana@gmail.com', // list of receivers
             subject,  // Subject line
-            html: `<p>${ message }</p>`// plain text body
+            html: `<p> From: ${ email } </br>${ message }</p>`// plain text body
           };
     
         transporter.sendMail(mailOptions, function (err, info) {
