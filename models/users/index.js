@@ -86,7 +86,7 @@ function insertArticle(connection, article){
 function getArticles(connection, author = false){ 
     return new Promise((resolve, reject) => {
         const authorEsc = (author) ? `%${author}` : '%'
-        const selectArticles = 'SELECT titulo, contenido, autor, imagen_p as imagen, categoria  FROM articulo WHERE autor LIKE ? ORDER BY fecha DESC'
+        const selectArticles = 'SELECT id, titulo, contenido, autor, imagen_p as imagen, categoria  FROM articulo WHERE autor LIKE ? ORDER BY fecha DESC'
         // const selectArticles = 'SELECT * FROM articulo WHERE autor LIKE ? ORDER BY fecha DESC'
 
         connection.query(selectArticles, [authorEsc], (err, rows, fields) => {
