@@ -25,13 +25,21 @@ const {
     getArticles,
     getArticle, 
     deleteArticle,
-    tokenAuthencitacion,
-    createSmallImage } = require('../models/users/index')
+    tokenAuthencitacion } = require('../models/users/index')
 
 
-routes.get('/articles', async (req, res, next) => {
+routes.get('/articles/:numArticles', async (req, res, next) => {
+    const { numArticles } = req.params
+    let articles
+
     try {
-        const articles = await getArticles(connection)
+        if(numArticles == 'all'){
+            articles = await getArticles(connection)
+
+        } else {
+            articles = await getArticles(connection, numArticles)
+
+        }
 
         // application/json para permitir carácteres especiales (ñ é á)
         res.writeHead(200, { 'Content-type': 'application/json', "Accept-Encoding": "gzip, deflate" })
@@ -43,7 +51,7 @@ routes.get('/articles', async (req, res, next) => {
     }
 })
 
-routes.get('/articles/:idArticle', async (req, res, next) => {
+routes.get('/article/:idArticle', async (req, res, next) => {
     let { idArticle } = req.params
 
     try {
@@ -61,23 +69,23 @@ routes.get('/articles/:idArticle', async (req, res, next) => {
     res.end(idArticle)
 })
 
-routes.get('/articles/:author', async (req, res, next) => {
-    const { author } = req.params
+// routes.get('/articles/:author', async (req, res, next) => {
+//     const { author } = req.params
 
-    try {
-        const articles = await getArticles(connection, author)
+//     try {
+//         const articles = await getArticles(connection, author)
         
-        res.writeHead(200, { 'Content-type': 'application/json' })
-        res.end(JSON.stringify(articles))
+//         res.writeHead(200, { 'Content-type': 'application/json' })
+//         res.end(JSON.stringify(articles))
 
-    } catch (e) {
-        res.writeHead(400, { 'Content-type': 'text/json' })
-        res.end(JSON.stringify(e))
-    }
+//     } catch (e) {
+//         res.writeHead(400, { 'Content-type': 'text/json' })
+//         res.end(JSON.stringify(e))
+//     }
     
-})
+// })
 
-routes.post('/delete-article/:articleId/', async (req, res, next) => {
+routes.delete('/delete-article/:articleId/', async (req, res, next) => {
     const { articleId } = req.params
     const { token } = req.body
 
@@ -88,6 +96,8 @@ routes.post('/delete-article/:articleId/', async (req, res, next) => {
         res.end(JSON.stringify(resp))
 
     } catch (e) {
+        console.log(e)
+
         res.writeHead(400, { 'Content-type': 'application/json' })
         res.end(JSON.stringify(e))
     }

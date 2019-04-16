@@ -83,13 +83,21 @@ function insertArticle(connection, article){
     })
 }
 
-function getArticles(connection, author = false){ 
+function getArticles(connection, numArticles = false){ 
     return new Promise((resolve, reject) => {
-        const authorEsc = (author) ? `%${author}` : '%'
-        const selectArticles = 'SELECT id, titulo, contenido, autor, imagen_p as imagen, categoria  FROM articulo WHERE autor LIKE ? ORDER BY fecha DESC'
-        // const selectArticles = 'SELECT * FROM articulo WHERE autor LIKE ? ORDER BY fecha DESC'
+        let selectArticles
 
-        connection.query(selectArticles, [authorEsc], (err, rows, fields) => {
+        if(numArticles){
+            selectArticles = 'SELECT id, titulo, contenido, autor, imagen_p as imagen, categoria  FROM articulo ORDER BY fecha DESC LIMIT ?'
+            numArticles = parseInt(numArticles)
+
+        } else {
+            selectArticles = 'SELECT id, titulo, contenido, autor, imagen_p as imagen, categoria FROM articulo WHERE ? ORDER BY fecha DESC'
+            numArticles = 1
+
+        }
+
+        connection.query(selectArticles, [numArticles], (err, rows, fields) => {
             if (err) {
                 reject({ resp: false, message: err.message})
             }
@@ -127,13 +135,13 @@ function deleteArticle(connection, articleId, token){
                 
                 connection.query(removeArticle, [articleId], (err, result, fields) => {
                     if (Boolean(err)){
-                        reject({resp: false, message: err.message})
+                        reject({isDeleted: false, message: err.message})
     
                     }else if(result.affectedRows == 1){
-                        resolve({ resp: true, message: 'delete successful' })
+                        resolve({ isDeleted: true, message: 'delete successful' })
     
                     }else {
-                        reject({resp: false, message: 'something happen'})
+                        reject({isDeleted: false, message: 'something happen'})
                     }
                 })
             }
